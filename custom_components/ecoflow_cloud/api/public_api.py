@@ -43,13 +43,12 @@ class EcoflowPublicApiClient(EcoflowApiClient):
         _LOGGER.info(f"Requesting all devices")
         response = await self.call_api("/device/list")
         result = list()
-        required_keys = {"sn", "productName", "online"}
+        required_keys = {"sn", "deviceName", "online"}
         for device in response["data"]:
             if not all(key in device for key in required_keys):
                 _LOGGER.warning(f"Skipping device due to missing keys: {device}")
                 continue
             sn = device["sn"]
-            # product_name = device["productName"]
             device_name = device.get("deviceName")
             status = int(device["online"])
             result.append(self.__create_device_info(sn, device_name, status))
