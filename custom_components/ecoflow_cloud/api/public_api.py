@@ -87,6 +87,7 @@ class EcoflowPublicApiClient(EcoflowApiClient):
 
     async def call_api(self, endpoint: str, params: dict[str, str] = None) -> dict:
         async with aiohttp.ClientSession() as session:
+            self.timestamp = str(int(time.time() * 1000))  # Refresh timestamp just before signing
             params_str = ""
             if params is not None:
                 params_str = self.__sort_and_concat_params(params)
