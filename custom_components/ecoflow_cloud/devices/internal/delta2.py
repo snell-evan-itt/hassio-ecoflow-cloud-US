@@ -6,7 +6,8 @@ from ...number import ChargingPowerEntity, MinBatteryLevelEntity, MaxBatteryLeve
 from ...select import DictSelectEntity, TimeoutDictSelectEntity
 from ...sensor import LevelSensorEntity, RemainSensorEntity, TempSensorEntity, CyclesSensorEntity, \
     InWattsSensorEntity, OutWattsSensorEntity, MilliVoltSensorEntity, InMilliVoltSensorEntity, \
-    OutMilliVoltSensorEntity, CapacitySensorEntity, StatusSensorEntity, QuotaStatusSensorEntity
+    OutMilliVoltSensorEntity, CapacitySensorEntity, StatusSensorEntity, QuotaStatusSensorEntity, \
+    InVoltSolarSensorEntity, InAmpSolarSensorEntity
 from ...switch import BeeperEntity, EnabledEntity
 
 
@@ -35,6 +36,8 @@ class Delta2(BaseDevice):
             OutMilliVoltSensorEntity(client, self, "inv.invOutVol", const.AC_OUT_VOLT),
 
             InWattsSensorEntity(client, self, "mppt.inWatts", const.SOLAR_IN_POWER),
+            InVoltSolarSensorEntity(client, self, "mppt.inVol", "Solar In Voltage"),
+            InAmpSolarSensorEntity(client, self, "mppt.inAmp", "PV Current"),
 
             # OutWattsSensorEntity(client, self, "pd.carWatts", const.DC_OUT_POWER),
             # the same value as pd.carWatts
