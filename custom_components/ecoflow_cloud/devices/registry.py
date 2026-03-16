@@ -24,6 +24,8 @@ from .public import (delta_pro as public_delta_pro,
                      smart_plug as public_smart_plug,
                      powerstream as public_powerstream,
                      wave3 as public_wave3,
+                     delta_pro_ultra as public_delta_pro_ultra,
+                     smart_home_panel_2 as public_smart_home_panel_2,
                      )
 from ..devices import BaseDevice, DiagnosticDevice
 
@@ -56,5 +58,7 @@ device_by_product: OrderedDict[str, Type[BaseDevice]] = OrderedDict[str, Type[Ba
     "Smart Plug": public_smart_plug.SmartPlug,
     "PowerStream": public_powerstream.PowerStream,
     "Wave 3": public_wave3.Wave3,
+    "DELTA Pro Ultra": public_delta_pro_ultra.DeltaProUltra,
+    "Smart Home Panel 2": public_smart_home_panel_2.SmartHomePanel2,
     "Diagnostic": DiagnosticDevice
 })
