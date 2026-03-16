@@ -7,7 +7,7 @@ from custom_components.ecoflow_cloud.devices import const, BaseDevice
 from custom_components.ecoflow_cloud.entities import BaseSensorEntity, BaseNumberEntity, BaseSwitchEntity, \
     BaseSelectEntity
 from custom_components.ecoflow_cloud.sensor import (
-    LevelSensorEntity, WattsSensorEntity, RemainSensorEntity,
+    LevelSensorEntity, WattsSensorEntity, RemainSensorEntity, InWattsSensorEntity,
     VoltSensorEntity, FrequencySensorEntity, MiscSensorEntity,
     QuotaStatusSensorEntity,
 )
@@ -83,6 +83,9 @@ class SmartHomePanel2(BaseDevice):
             WattsSensorEntity(client, self,
                               "pd303_mc.backupIncreInfo.Energy3Info.outputPower",
                               "Backup Unit Output Power", False),
+            InWattsSensorEntity(client, self,
+                              "pd303_mc.backupIncreInfo.Energy3Info.lcdInputWatts",
+                              "Backup Unit Charge Power", False),
 
             # ── Backup channel watts (3-element array, 0-indexed) ─────────────────
             CircuitWattsSensorEntity(client, self, "wattInfo.chWatt", 0,
