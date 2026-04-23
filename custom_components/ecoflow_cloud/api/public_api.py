@@ -50,11 +50,43 @@ class EcoflowPublicApiClient(EcoflowApiClient):
                 continue
             sn = device["sn"]
             product_name = device.get("productName", "")
-            device_name = device.get("deviceName")
+            device_name = device.get("deviceName", "")
             status = int(device["online"])
+            
+            # If productName is missing, try to infer it from deviceName
+            if not product_name and device_name:
+                product_name = self._infer_product_name(device_name)
+            
             result.append(self.__create_device_info(sn, device_name, product_name, status))
 
         return result
+
+    def _infer_product_name(self, device_name: str) -> str:
+        """Infer product name from device name if productName is not available."""
+        device_name_upper = device_name.upper()
+        
+        # Map device name patterns to product names
+        name_mappings = {
+            "WAVE 3": "Wave 3",
+            "WAVE_3": "Wave 3",
+            "WAVE2": "WAVE_2",
+            "WAVE 2": "WAVE_2",
+            "DELTA 2": "DELTA_2",
+            "DELTA_2": "DELTA_2",
+            "DELTA 3": "DELTA_3",
+            "DELTA_3": "DELTA_3",
+            "RIVER 2": "RIVER_2",
+            "RIVER_2": "RIVER_2",
+            "RIVER 3": "RIVER_3",
+            "RIVER_3": "RIVER_3",
+        }
+        
+        for pattern, product_name in name_mappings.items():
+            if pattern in device_name_upper:
+                return product_name
+        
+        _LOGGER.debug(f"Could not infer product name from device name: {device_name}")
+        return ""
 
     def configure_device(self, device_data):
         info = self.__create_device_info(device_data.sn, device_data.name, device_data.device_type)
@@ -85,9 +117,12 @@ class EcoflowPublicApiClient(EcoflowApiClient):
             target_devices = [device_sn]
 
         for sn in target_devices:
-            raw = await self.call_api("/device/quota/all", {"sn": sn})
-            if "data" in raw:
-                self.devices[sn].data.add_data(PreparedData(None, {"params": raw["data"]}, None))
+            try:
+                raw = await self.call_api("/device/quota/all", {"sn": sn})
+                if "data" in raw:
+                    self.devices[sn].data.add_data(PreparedData(None, {"params": raw["data"]}, None))
+            except Exception as e:
+                _LOGGER.debug(f"Failed to fetch quota for device {sn}: {e}")
 
     async def call_api(self, endpoint: str, params: dict[str, str] = None) -> dict:
         async with aiohttp.ClientSession() as session:

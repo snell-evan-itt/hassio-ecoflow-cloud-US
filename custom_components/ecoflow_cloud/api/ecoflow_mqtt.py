@@ -60,7 +60,7 @@ class EcoflowMQTTClient:
 
     @callback
     def _on_socket_close(self, client, userdata: Any, sock: SocketType) -> None:
-        _LOGGER.error(f"Unexpected MQTT Socket disconnection : {str(sock)}")
+        _LOGGER.debug(f"MQTT Socket closed (may reconnect automatically): {str(sock)}")
 
     @callback
     def _on_connect(self, client, userdata, flags, rc):
@@ -118,7 +118,12 @@ class EcoflowMQTTClient:
 
     def __log_with_reason(self, action: str, client, userdata, rc):
         import paho.mqtt.client as mqtt_client
-        _LOGGER.error(f"MQTT {action}: {mqtt_client.error_string(rc)} ({self.__mqtt_info.client_id}) - {userdata}")
+        reason = mqtt_client.error_string(rc)
+        if action == "disconnect" and rc == 4:
+            # rc=4 is "The connection was lost" which is normal with auto-reconnect
+            _LOGGER.debug(f"MQTT {action}: {reason} ({self.__mqtt_info.client_id}) - will reconnect automatically")
+        else:
+            _LOGGER.warning(f"MQTT {action}: {reason} ({self.__mqtt_info.client_id}) - {userdata}")
 
     message_id = 999900000 + random.randint(10000, 99999)
 
