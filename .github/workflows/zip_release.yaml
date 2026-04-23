@@ -15,7 +15,7 @@ jobs:
       id-token: write
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: 🔢 Adjust version number
         shell: bash
@@ -34,11 +34,11 @@ jobs:
           zip ecoflow-cloud.zip -r ./
 
       - name: 🔏 Sign release package
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        uses: sigstore/gh-action-sigstore-python@v3.3.0
         with:
           inputs: ${{ github.workspace }}/custom_components/ecoflow_cloud/ecoflow-cloud.zip
 
       - name: ⬆️ Upload zip to release
-        uses: softprops/action-gh-release@v2.2.2
+        uses: softprops/action-gh-release@v3.0.0
         with:
           files: ${{ github.workspace }}/custom_components/ecoflow_cloud/ecoflow-cloud.zip
