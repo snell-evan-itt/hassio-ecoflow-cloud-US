@@ -29,7 +29,6 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
             'set_reply': [dict(sorted(k.items())) for k in device.data.set_reply],
             'get':       [dict(sorted(k.items())) for k in device.data.get],
             'get_reply': [dict(sorted(k.items())) for k in device.data.get_reply],
-            'raw_data': device.data.raw_data,
         }
         values["EcoFlow"].append(value)
     return values
