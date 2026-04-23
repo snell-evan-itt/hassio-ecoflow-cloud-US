@@ -56,34 +56,38 @@ class EcoflowPublicApiClient(EcoflowApiClient):
 
         return result
 
-    def configure_device(self, device_sn: str, device_name: str, device_type: str, power_step = -1):
-        info = self.__create_device_info(device_sn, device_name, device_type)
+    def configure_device(self, device_data):
+        info = self.__create_device_info(device_data.sn, device_data.name, device_data.device_type)
 
         from custom_components.ecoflow_cloud.devices.registry import device_by_product
-        if device_type in device_by_product:
-            device = device_by_product[device_type](info)
+        if device_data.device_type in device_by_product:
+            device = device_by_product[device_data.device_type](info, device_data)
         else:
-            device = DiagnosticDevice(info)
+            device = DiagnosticDevice(info, device_data)
 
-        device.power_step = power_step
         self.add_device(device)
         return device
 
     async def quota_all(self, device_sn: str | None):
+        from ..devices.data_holder import PreparedData
         if not device_sn:
-            target_devices = self.devices.keys()
+            target_devices = list(self.devices.keys())
             # update all statuses
-            devices = await self.fetch_all_available_devices()
-            for device in devices:
-                if device.sn in self.devices:
-                    self.devices[device.sn].data.update_status({"params": {"status" : device.status}})
+            try:
+                fetched = await self.fetch_all_available_devices()
+                for device in fetched:
+                    if device.sn in self.devices:
+                        online = device.status == 1
+                        self.devices[device.sn].data.add_status(PreparedData(online, None, None))
+            except Exception:
+                _LOGGER.exception("Failed to fetch device statuses")
         else:
             target_devices = [device_sn]
 
         for sn in target_devices:
             raw = await self.call_api("/device/quota/all", {"sn": sn})
             if "data" in raw:
-                self.devices[sn].data.update_data({"params": raw["data"]})
+                self.devices[sn].data.add_data(PreparedData(None, {"params": raw["data"]}, None))
 
     async def call_api(self, endpoint: str, params: dict[str, str] = None) -> dict:
         async with aiohttp.ClientSession() as session:

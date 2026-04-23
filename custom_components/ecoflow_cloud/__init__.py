@@ -1,5 +1,4 @@
 import logging
-import dataclasses
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
@@ -9,6 +8,7 @@ from homeassistant.core import HomeAssistant
 from .api import EcoflowApiClient
 from .api.private_api import EcoflowPrivateApiClient
 from .api.public_api import EcoflowPublicApiClient
+from .device_data import DeviceData, DeviceOptions
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,19 +56,6 @@ OPTS_REFRESH_PERIOD_SEC: Final = "refresh_period_sec"
 
 DEFAULT_REFRESH_PERIOD_SEC: Final = 5
 
-
-@dataclasses.dataclass
-class DeviceData:
-    sn: str
-    name: str
-    device_type: str
-
-
-@dataclasses.dataclass
-class DeviceOptions:
-    refresh_period: int
-    power_step: int
-    diagnostic_mode: bool
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -157,17 +144,34 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 def extract_devices(entry: ConfigEntry) -> dict[str, DeviceData]:
     devices: dict[str, DeviceData] = {}
     for sn, device_data in entry.data[CONF_DEVICE_LIST].items():
+        opts_raw = entry.options.get(CONF_DEVICE_LIST, {}).get(sn, {})
+        options = DeviceOptions(
+            refresh_period=opts_raw.get(OPTS_REFRESH_PERIOD_SEC, DEFAULT_REFRESH_PERIOD_SEC),
+            power_step=opts_raw.get(OPTS_POWER_STEP, -1),
+            diagnostic_mode=opts_raw.get(OPTS_DIAGNOSTIC_MODE, False),
+            verbose_status_mode=False,
+            assume_offline_sec=300,
+        )
         devices[sn] = DeviceData(
-            sn, device_data[CONF_DEVICE_NAME], device_data[CONF_DEVICE_TYPE]
+            sn=sn,
+            name=device_data[CONF_DEVICE_NAME],
+            device_type=device_data[CONF_DEVICE_TYPE],
+            options=options,
+            display_name=None,
+            parent=None,
         )
     return devices
 
 
 def extract_options(entry: ConfigEntry) -> dict[str, DeviceOptions]:
     options: dict[str, DeviceOptions] = {}
-    for sn, device_option in entry.options[CONF_DEVICE_LIST].items():
+    for sn, device_option in entry.options.get(CONF_DEVICE_LIST, {}).items():
         options[sn] = DeviceOptions(
-            device_option[OPTS_REFRESH_PERIOD_SEC], device_option[OPTS_POWER_STEP], device_option[OPTS_DIAGNOSTIC_MODE]
+            refresh_period=device_option.get(OPTS_REFRESH_PERIOD_SEC, DEFAULT_REFRESH_PERIOD_SEC),
+            power_step=device_option.get(OPTS_POWER_STEP, -1),
+            diagnostic_mode=device_option.get(OPTS_DIAGNOSTIC_MODE, False),
+            verbose_status_mode=False,
+            assume_offline_sec=300,
         )
     return options
 
@@ -193,28 +197,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     await api_client.login()
 
     devices_list: dict[str, DeviceData] = {}
-    devices_options: dict[str, DeviceOptions] = {}
 
     if CONF_LOAD_ALL_DEVICES not in entry.data or not entry.data[CONF_LOAD_ALL_DEVICES]:
         devices_list.update(extract_devices(entry))
-        devices_options.update(extract_options(entry))
     else:
         try:
             from .devices.registry import device_by_product
             device_list = list(device_by_product.keys())
-            devices = await api_client.fetch_all_available_devices()
-            for device in devices:
+            fetched = await api_client.fetch_all_available_devices()
+            for device in fetched:
                 if device.device_type in device_list:
-                    devices_list[device.sn] = DeviceData(device.sn, device.name, device.device_type)
-                    devices_options[device.sn] = DeviceOptions(DEFAULT_REFRESH_PERIOD_SEC, -1, False)
+                    options = DeviceOptions(
+                        refresh_period=DEFAULT_REFRESH_PERIOD_SEC,
+                        power_step=-1,
+                        diagnostic_mode=False,
+                        verbose_status_mode=False,
+                        assume_offline_sec=300,
+                    )
+                    devices_list[device.sn] = DeviceData(
+                        sn=device.sn,
+                        name=device.name,
+                        device_type=device.device_type,
+                        options=options,
+                        display_name=None,
+                        parent=None,
+                    )
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception in fetch device action")
 
     for sn, device_data in devices_list.items():
-        device_option = devices_options[sn]
-        device = api_client.configure_device(device_data.sn, device_data.name, device_data.device_type,
-                                             device_option.power_step)
-        device.configure(hass, device_option.refresh_period, device_option.diagnostic_mode)
+        device = api_client.configure_device(device_data)
+        device.configure(hass)
 
     await hass.async_add_executor_job(api_client.start)
     hass.data[ECOFLOW_DOMAIN][entry.entry_id] = api_client

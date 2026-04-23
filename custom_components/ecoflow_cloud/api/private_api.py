@@ -80,18 +80,17 @@ class EcoflowPrivateApiClient(EcoflowApiClient):
         for sn in target_devices:
             self.mqtt_client.send_get_message(sn, {"version": "1.1", "moduleType": 0, "operateType": "latestQuotas", "params": {}})
 
-    def configure_device(self, device_sn: str, device_name: str, device_type: str, power_step: int = -1):
-        info = self.__create_device_info(device_sn, device_name, device_type)
+    def configure_device(self, device_data):
+        from ..device_data import DeviceData
+        info = self.__create_device_info(device_data.sn, device_data.name, device_data.device_type)
 
         from ..devices.registry import devices
-        if device_type in devices:
-            device = devices[device_type](info)
+        if device_data.device_type in devices:
+            device = devices[device_data.device_type](info, device_data)
         else:
-            device = DiagnosticDevice(info)
+            device = DiagnosticDevice(info, device_data)
 
-        device.power_step = power_step
         self.add_device(device)
-
         return device
 
     def __create_device_info(self, device_sn: str, device_name: str, device_type: str, status: int = -1) -> EcoflowDeviceInfo:

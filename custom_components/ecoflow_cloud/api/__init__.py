@@ -42,7 +42,7 @@ class EcoflowApiClient:
         pass
 
     @abstractmethod
-    def configure_device(self, device_sn: str, device_name: str, device_type: str, power_step=-1):
+    def configure_device(self, device_data):
         pass
 
     def add_device(self, device):
