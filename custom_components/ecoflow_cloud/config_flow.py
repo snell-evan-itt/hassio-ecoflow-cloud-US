@@ -334,9 +334,9 @@ class EcoflowConfigFlow(ConfigFlow, domain=ECOFLOW_DOMAIN):
 
 class EcoflowOptionsFlow(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
-        self.config_entry = config_entry
-        self.devices: dict[str, DeviceData] = extract_devices(self.config_entry)
-        self.devices_options: dict[str, DeviceOptions] = extract_options(self.config_entry)
+        self._config_entry = config_entry
+        self.devices: dict[str, DeviceData] = extract_devices(self._config_entry)
+        self.devices_options: dict[str, DeviceOptions] = extract_options(self._config_entry)
         self.device_selector = {}
         for sn, device in self.devices.items():
             self.device_selector[f"{device.name} ({device.sn})"] = device
@@ -345,11 +345,14 @@ class EcoflowOptionsFlow(OptionsFlow):
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
         if user_input is None:
-            return self.async_show_form(step_id="init",
-                                        data_schema=vol.Schema({
-                                            vol.Required(CONF_SELECT_DEVICE_KEY): vol.In(
-                                                list(self.device_selector.keys()))
-                                        }))
+            return self.async_show_form(
+                step_id="init",
+                data_schema=vol.Schema({
+                    vol.Required(CONF_SELECT_DEVICE_KEY): vol.In(
+                        list(self.device_selector.keys())
+                    )
+                })
+            )
 
         self.selected_device = self.device_selector[user_input[CONF_SELECT_DEVICE_KEY]]
         return await self.async_step_options()
@@ -367,7 +370,7 @@ class EcoflowOptionsFlow(OptionsFlow):
                 })
             )
 
-        new_options = {**self.config_entry.options}
+        new_options = {**self._config_entry.options}
         new_options[CONF_DEVICE_LIST][self.selected_device.sn] = {
             OPTS_POWER_STEP: user_input[OPTS_POWER_STEP],
             OPTS_REFRESH_PERIOD_SEC: user_input[OPTS_REFRESH_PERIOD_SEC],
