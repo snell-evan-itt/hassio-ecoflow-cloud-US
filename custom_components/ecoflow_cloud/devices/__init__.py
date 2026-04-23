@@ -21,6 +21,9 @@ from custom_components.ecoflow_cloud.devices.data_holder import EcoflowDataHolde
 from custom_components.ecoflow_cloud.devices.data_coordinator import DeviceDataCoordinator
 from custom_components.ecoflow_cloud.devices.status_tracker import StatusTracker
 
+# Alias for backward compatibility with entities module
+EcoflowDeviceUpdateCoordinator = DeviceDataCoordinator
+
 _LOGGER = logging.getLogger(__name__)
 
 
