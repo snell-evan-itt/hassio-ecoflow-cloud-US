@@ -22,7 +22,6 @@ from homeassistant.const import UnitOfTemperature, ATTR_TEMPERATURE
 from typing import Any, Optional
 
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
-from custom_components.ecoflow_cloud.api.message import PrivateAPIMessageProtocol
 from custom_components.ecoflow_cloud.devices import BaseDevice, const
 from custom_components.ecoflow_cloud.number import LevelEntity
 from custom_components.ecoflow_cloud.select import DictSelectEntity
@@ -64,7 +63,7 @@ _SUBMODE_TO_PRESET: dict[int, str] = {0: PRESET_NONE, 2: PRESET_BOOST, 3: PRESET
 _PRESET_TO_SUBMODE: dict[str, int] = {PRESET_NONE: 0, PRESET_BOOST: 2, PRESET_SLEEP: 3, PRESET_ECO: 4}
 
 
-class Wave3CommandMessage(PrivateAPIMessageProtocol):
+class Wave3CommandMessage:
     def __init__(self, payload: bytes):
         self._payload = payload
 
