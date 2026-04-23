@@ -23,7 +23,7 @@ from typing import Any, Optional
 
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
 from custom_components.ecoflow_cloud.api.message import PrivateAPIMessageProtocol
-from custom_components.ecoflow_cloud.devices import BaseInternalDevice, const
+from custom_components.ecoflow_cloud.devices import BaseDevice, const
 from custom_components.ecoflow_cloud.number import LevelEntity
 from custom_components.ecoflow_cloud.select import DictSelectEntity
 from custom_components.ecoflow_cloud.sensor import (
@@ -115,7 +115,7 @@ def _create_wave3_command(device_sn: str, **kwargs: Any) -> Wave3CommandMessage 
         return None
 
 
-class Wave3(BaseInternalDevice):
+class Wave3(BaseDevice):
 
     def _prepare_data(self, raw_data: bytes) -> dict[str, Any]:
         try:

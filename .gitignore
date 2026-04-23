@@ -4,6 +4,7 @@ venv
 .DS_Store
 .vscode/settings.json
 .coverage
+.claude
 requirements.test.txt
 requirements.txt
 setup.cfg
