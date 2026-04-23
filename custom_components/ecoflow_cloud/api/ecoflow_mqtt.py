@@ -93,6 +93,15 @@ class EcoflowMQTTClient:
         except UnicodeDecodeError as error:
             _LOGGER.error(f"UnicodeDecodeError: {error}. Ignoring message and waiting for the next one.")
 
+    def publish(self, topic: str, payload):
+        try:
+            info = self.__client.publish(topic, payload, 1)
+            _LOGGER.debug("Sending " + str(payload) + " :" + str(info) + "(" + str(info.is_published()) + ")")
+        except RuntimeError as error:
+            _LOGGER.error(error, "Error on topic " + topic)
+        except Exception as error:
+            _LOGGER.debug(error, "Error on topic " + topic)
+
     def send_get_message(self, device_sn: str, command: dict):
         payload = self.__prepare_payload(command)
         self.__send(self.__devices[device_sn].device_info.get_topic, json.dumps(payload))

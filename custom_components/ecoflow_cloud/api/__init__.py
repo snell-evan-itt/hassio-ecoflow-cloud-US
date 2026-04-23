@@ -51,6 +51,19 @@ class EcoflowApiClient:
     def remove_device(self, device):
         self.devices.pop(device.device_info.sn, None)
 
+    def send_set_message(self, device_sn: str, mqtt_state: dict[str, Any], command):
+        from .message import JSONMessage, Message
+        if isinstance(command, dict):
+            command = JSONMessage(command)
+        self.devices[device_sn].data.update_to_target_state(mqtt_state)
+        self.mqtt_client.publish(self.devices[device_sn].device_info.set_topic, command.to_mqtt_payload())
+
+    def send_get_message(self, device_sn: str, command):
+        from .message import JSONMessage, Message
+        if isinstance(command, dict):
+            command = JSONMessage(command)
+        self.mqtt_client.publish(self.devices[device_sn].device_info.get_topic, command.to_mqtt_payload())
+
     def _accept_mqqt_certification(self, resp_json: dict):
         _LOGGER.info(f"Received MQTT credentials: {resp_json}")
         try:
