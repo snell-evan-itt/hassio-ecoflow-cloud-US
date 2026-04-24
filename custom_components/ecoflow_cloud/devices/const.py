@@ -275,6 +275,7 @@ POWER_SUB_MODE = "Sub-mode"
 
 # Wave 3
 SELF_CONSUMPTION_POWER = "Self Consumption Power"
+DC_BATTERY_POWER = "DC Battery Power"
 WATER_LEVEL = "Water Level"
 POWER_OFF_DELAY_REMAINING_TIME = "Power Off Delay Remaining"
 AMBIENT_TEMPERATURE = "Ambient Temperature"
