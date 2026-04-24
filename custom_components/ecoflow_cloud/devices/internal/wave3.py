@@ -261,7 +261,7 @@ class Wave3(BaseDevice):
 
         drainage_switch = EnabledEntity(
             client, self, "drainage_mode", const.AUTO_DRAINAGE,
-            lambda v: _create_wave3_command(sn, cfg_drainage_mode=1 if v else 0), enableValue=1, disableValue=0
+            lambda v: _create_wave3_command(sn, cfg_drainage_mode=1 if v else 0)
         )
         drainage_switch._attr_icon = "mdi:water-pump"
 
