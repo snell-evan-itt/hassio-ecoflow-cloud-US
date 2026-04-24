@@ -1,7 +1,7 @@
 [![GitHub Release](https://img.shields.io/github/release/snell-evan-itt/hassio-ecoflow-cloud-US.svg?style=for-the-badge&color=blue)](https://github.com/snell-evan-itt/hassio-ecoflow-cloud-US/releases)
 [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/snell-evan-itt/hassio-ecoflow-cloud-US/total?style=for-the-badge)](https://github.com/snell-evan-itt/hassio-ecoflow-cloud-US/releases/latest)
 [![HACS Default](https://img.shields.io/badge/HACS-default-blue.svg?style=for-the-badge)](https://hacs.xyz) [![Community forum discussion](https://img.shields.io/badge/COMMUNITY-FORUM-success?style=for-the-badge&color=yellow)](https://community.home-assistant.io/t/custom-component-ecoflow-cloud-api-for-us-users/799962)
-<iframe src="https://github.com/sponsors/snell-evan-itt/button" title="Sponsor snell-evan-itt" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+<a href="https://www.buymeacoffee.com/snell.evan.itt"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=snell.evan.itt&button_colour=40DCA5&font_colour=ffffff&font_family=Lato&outline_colour=000000&coffee_colour=FFDD00" /></a>
 
 
 
