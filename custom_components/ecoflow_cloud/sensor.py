@@ -251,7 +251,7 @@ class InVoltSolarSensorEntity(VoltSensorEntity):
     _attr_icon = "mdi:solar-power"
 
     def _update_value(self, val: Any) -> bool:
-        return super()._update_value(int(val) / 1000)
+        return super()._update_value(int(val) / 10)
 
 class OutVoltDcSensorEntity(VoltSensorEntity):
     _attr_icon = "mdi:transmission-tower-export"
@@ -266,7 +266,7 @@ class InAmpSolarSensorEntity(AmpSensorEntity):
     _attr_icon = "mdi:solar-power"
 
     def _update_value(self, val: Any) -> bool:
-        return super()._update_value(int(val))
+        return super()._update_value(int(val) * 10)
 
 class InEnergySensorEntity(EnergySensorEntity):
     _attr_icon = "mdi:transmission-tower-import"
