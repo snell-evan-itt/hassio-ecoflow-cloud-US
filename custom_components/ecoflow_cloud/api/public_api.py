@@ -30,8 +30,6 @@ class EcoflowPublicApiClient(EcoflowApiClient):
         self.access_key = access_key
         self.secret_key = secret_key
         self.group = group
-        self.nonce = str(random.randint(10000, 1000000))
-        self.timestamp = str(int(time.time() * 1000))
 
     async def login(self):
         _LOGGER.info(f"Requesting IoT MQTT credentials")
@@ -125,17 +123,29 @@ class EcoflowPublicApiClient(EcoflowApiClient):
                 _LOGGER.debug(f"Failed to fetch quota for device {sn}: {e}")
 
     async def call_api(self, endpoint: str, params: dict[str, str] = None) -> dict:
+        # A fresh nonce/timestamp is required on every request: EcoFlow's
+        # signature validation enforces a timestamp freshness window, so a
+        # value reused across the client's whole lifetime (previously
+        # generated once in __init__) starts being rejected with
+        # "signature is wrong" once it ages past that window - silently
+        # breaking every subsequent API call (including the periodic
+        # quota-staleness recovery re-poll in QuotaStatusSensorEntity)
+        # until Home Assistant is restarted and a new client/timestamp is
+        # created.
+        nonce = str(random.randint(10000, 1000000))
+        timestamp = str(int(time.time() * 1000))
+
         async with aiohttp.ClientSession() as session:
             params_str = ""
             if params is not None:
                 params_str = self.__sort_and_concat_params(params)
 
-            sign = self.__gen_sign(params_str)
+            sign = self.__gen_sign(params_str, nonce, timestamp)
 
             headers = {
                 'accessKey': self.access_key,
-                'nonce': self.nonce,
-                'timestamp': self.timestamp,
+                'nonce': nonce,
+                'timestamp': timestamp,
                 'sign': sign
             }
 
@@ -157,8 +167,8 @@ class EcoflowPublicApiClient(EcoflowApiClient):
             status_topic=f"/open/{self.mqtt_info.username}/{device_sn}/status"
         )
 
-    def __gen_sign(self, query_params: str | None) -> str:
-        target_str = f"accessKey={self.access_key}&nonce={self.nonce}&timestamp={self.timestamp}"
+    def __gen_sign(self, query_params: str | None, nonce: str, timestamp: str) -> str:
+        target_str = f"accessKey={self.access_key}&nonce={nonce}&timestamp={timestamp}"
         if query_params:
             target_str = query_params + "&" + target_str
 
